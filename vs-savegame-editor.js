@@ -7,8 +7,8 @@ const fs = require("fs");
  * 1) Disable Steam Cloud saves for the game
  * 2.1) Main expected location for the savegame: https://www.pcgamingwiki.com/wiki/Vampire_Survivors#Save_game_data_location
  * 2.2) Copy your `SaveData.sav` contents as the value of `saveGameData`, replacing also the `{}`
- * 3) Edit at the last line the number `100000` to whatever amount of coins you wish to have
- * 4) Run the game, reset your powerups, etc. (sometimes coins amount is not updated, but total coins will upon refunds
+ * 3) Edit at the last line the number `300000` to whatever amount of coins you wish to have
+ * 4) Run the game, reset your powerups, etc. (sometimes coins amount is not updated but total coins will be upon reset) and quit the game
  * 5) reactivate Steam Cloud saves
  */
 const saveGameData = {};
@@ -47,5 +47,5 @@ const changeAvailableCoins = (saveData, desiredAmount) => {
 
 console.log("checksum correct?", validateChecksum(saveGameData));
 if (validateChecksum(saveGameData)) {
-  changeAvailableCoins(saveGameData, 100000);
+  changeAvailableCoins(saveGameData, 300000);
 }
