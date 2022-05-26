@@ -1,7 +1,14 @@
 # vampire-survivors-savegame-editor
 
-NodeJS tiny application to toy with the game savegame files. 
+Tiny NodeJS application to fiddle with the game save files.
 
-Validates that checksum calculation is correct (before changing anything), then changes the coins to `300000`. Also changes lifetime coins, so if available coins don't appear modified simply reset all powerups and the total amount should have `+300000`.
+## Instructions
 
-Make a backup of your savegame file before overriding with the `MODIFIED.sav` generated new one!
+1) Either disable Steam cloud saves for the game, or in case of conflict, always choose local files
+2) Drop this file into the game's save folder (https://www.pcgamingwiki.com/wiki/Vampire_Survivors#Save_game_data_location)
+3) Run the file from a command line (`node vs-savegame-editor.js`)
+4) Run the game. If coins are not changed, reset your power-ups
+
+You can edit the amount of coins that will be added by editing the `newCoinsAmount` constant at the beginning of `vs-savegame-editor.js`.
+
+It creates a backup copy of the original save file on each run, but still no responsibilites if it messes up things!

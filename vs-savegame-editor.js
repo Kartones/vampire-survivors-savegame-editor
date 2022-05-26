@@ -1,17 +1,27 @@
 const crypto = require("crypto");
 const fs = require("fs");
+const path = require("path");
 
-/**
- * Instructions
- *
- * 1) Disable Steam Cloud saves for the game
- * 2.1) Main expected location for the savegame: https://www.pcgamingwiki.com/wiki/Vampire_Survivors#Save_game_data_location
- * 2.2) Copy your `SaveData.sav` contents as the value of `saveGameData`, replacing also the `{}`
- * 3) Edit at the last line the number `300000` to whatever amount of coins you wish to have
- * 4) Run the game, reset your powerups, etc. (sometimes coins amount is not updated but total coins will be upon reset) and quit the game
- * 5) reactivate Steam Cloud saves
- */
-const saveGameData = {};
+// This is the amount of coins that will be added to the save game
+const newCoinsAmount = 500000;
+
+// Useful for when you want to change other parameters of the save file by yourself, and still want to have a valid
+// checksum generated at the end
+const skipChecksum = false;
+
+const loadSaveData = () => {
+  const fileName = "SaveData.sav";
+  const filePath = path.join(process.cwd(), fileName);
+  if (fs.existsSync(filePath)) {
+    return JSON.parse(fs.readFileSync(filePath, "utf8"));
+  } else {
+    throw new Error(`File '${fileName}' not found`);
+  }
+};
+
+const saveDataToFile = (saveData, fileName) => {
+  fs.writeFileSync(fileName, JSON.stringify(saveData));
+};
 
 const copyData = (data) => {
   return JSON.parse(JSON.stringify(data));
@@ -32,6 +42,12 @@ const validateChecksum = (saveData) => {
 
 const changeAvailableCoins = (saveData, desiredAmount) => {
   const saveDataCopy = copyData(saveData);
+
+  const backupFileName = `SaveData_Backup_${Date.now()}.sav`;
+  saveDataToFile(saveDataCopy, backupFileName);
+  console.log(`Original game backup saved as '${backupFileName}'`);
+
+  // Emtpy checksum, will be filled afterwards
   saveDataCopy["checksum"] = "";
 
   saveDataCopy["LifetimeCoins"] -= saveDataCopy["Coins"];
@@ -40,12 +56,17 @@ const changeAvailableCoins = (saveData, desiredAmount) => {
 
   saveDataCopy["checksum"] = calculateChecksum(saveDataCopy);
 
-  const filename = "MODIFIED.sav";
-  fs.writeFileSync(filename, JSON.stringify(saveDataCopy));
-  console.log(`Modified game saved as '${filename}'`);
+  const fileName = "SaveData.sav";
+  saveDataToFile(saveDataCopy, fileName);
+  console.log(`Modified game saved as '${fileName}'`);
 };
 
-console.log("checksum correct?", validateChecksum(saveGameData));
-if (validateChecksum(saveGameData)) {
-  changeAvailableCoins(saveGameData, 300000);
+// ---
+
+let saveGameData = loadSaveData();
+if (!skipChecksum) {
+  console.log("checksum correct?", validateChecksum(saveGameData));
+}
+if (skipChecksum || validateChecksum(saveGameData)) {
+  changeAvailableCoins(saveGameData, newCoinsAmount);
 }
