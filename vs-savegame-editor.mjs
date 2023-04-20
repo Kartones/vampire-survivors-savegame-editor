@@ -1,23 +1,19 @@
-const crypto = require("crypto");
-const fs = require("fs");
-const path = require("path");
+import { createHash } from "crypto";
+import { existsSync, readFileSync, writeFileSync } from "fs";
+import { join } from "path";
 
 // This is the amount of coins that will be added to the save game
 const NEW_COINS_AMOUNT = 5000000;
-
-// Useful for when you want to change other parameters of the save file by yourself, and still want to have a valid
-// checksum generated at the end
-const SKIP_CHECKSUM = false;
 
 const SAVE_FILENAME = "SaveData";
 const SAVE_FILENAME_OLD = "SaveData.sav";
 
 const isOldFileName = () => {
   // Test first with the new filename, in case there are both files
-  if (fs.existsSync(path.join(process.cwd(), SAVE_FILENAME))) {
+  if (existsSync(join(process.cwd(), SAVE_FILENAME))) {
     return false;
   }
-  if (fs.existsSync(path.join(process.cwd(), SAVE_FILENAME_OLD))) {
+  if (existsSync(join(process.cwd(), SAVE_FILENAME_OLD))) {
     return true;
   }
   throw new Error(
@@ -26,12 +22,12 @@ const isOldFileName = () => {
 };
 
 const loadSaveData = (fileName) => {
-  const filePath = path.join(process.cwd(), fileName);
-  return JSON.parse(fs.readFileSync(filePath, "utf8"));
+  const filePath = join(process.cwd(), fileName);
+  return JSON.parse(readFileSync(filePath, "utf8"));
 };
 
 const saveDataToFile = (saveData, fileName) => {
-  fs.writeFileSync(fileName, JSON.stringify(saveData));
+  writeFileSync(fileName, JSON.stringify(saveData));
 };
 
 const copyData = (data) => {
@@ -39,8 +35,7 @@ const copyData = (data) => {
 };
 
 const calculateChecksum = (jsonObject) =>
-  crypto
-    .createHash("sha256", "DefinitelyNotSaveDataSecretKey")
+  createHash("sha256", "DefinitelyNotSaveDataSecretKey")
     .update(JSON.stringify(jsonObject))
     .digest("hex");
 
@@ -93,19 +88,16 @@ const removeBadEggs = (saveData) => {
   return saveDataCopy;
 };
 
-// ---
+// --- MAIN ---
 
 let fileName = isOldFileName() ? SAVE_FILENAME_OLD : SAVE_FILENAME;
-
 let saveGameData = loadSaveData(fileName);
+
 // Ensure that we can modify the save file (generate a valid checksum)
 let validChecksum = isChecksumValid(saveGameData);
+console.log("checksum correct?", validChecksum);
 
-if (!SKIP_CHECKSUM) {
-  console.log("checksum correct?", validChecksum);
-}
-
-if (validChecksum || SKIP_CHECKSUM) {
+if (validChecksum) {
   createBackup(fileName, saveGameData);
 
   let saveData = changeAvailableCoins(saveGameData, NEW_COINS_AMOUNT);
