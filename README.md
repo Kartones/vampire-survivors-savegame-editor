@@ -3,7 +3,8 @@
 Tiny NodeJS application to fiddle with the game save files.
 
 ⚠⚠⚠ With the migration to Unity3D (late 2023), the game changed the savegame's checksum secret and this tool no longer works ⚠⚠⚠
-⚠⚠⚠ If I'm able to obtain the new secret and calculate valid checksums again, I'll update accordingly ⚠⚠⚠
+
+⚠⚠⚠ If obtain the new secret and calculate valid checksums again, I'll update accordingly ⚠⚠⚠
 
 ## Features
 
