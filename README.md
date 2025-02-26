@@ -1,15 +1,13 @@
 # vampire-survivors-savegame-editor
 
-Tiny NodeJS application to fiddle with the game save files.
-
-⚠⚠⚠ With the migration to Unity3D (late 2023), the game changed the savegame's checksum secret and this tool no longer works ⚠⚠⚠
-
-⚠⚠⚠ If obtain the new secret and calculate valid checksums again, I'll update accordingly ⚠⚠⚠
+Tiny NodeJS application to fiddle with the game save files of the [Vampire Survivors](https://store.steampowered.com/app/1794680/Vampire_Survivors/) videogame.
 
 ## Features
 
-- Sets coins to either 5000000 or the value that you pass as argument
-- Removes "bad eggs" from your characters. Currently only those that increase the `curse` value
+- Sets coins to either `5000000` or the value that you pass as argument.
+- Removes "bad eggs" from your characters. Currently only those that increase the `curse` value.
+
+Both changes affect the main game and those DLC adventures that you have already started (otherwise, their data is not present in the save game).
 
 ## Instructions
 

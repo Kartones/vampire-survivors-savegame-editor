@@ -5,10 +5,6 @@ import { join } from "path";
 // This is the amount of coins that will be added to the save game, if not passed as command-line argument
 const DEFAULT_NEW_COINS_AMOUNT = 5000000;
 
-// Useful for when you want to change other parameters of the save file by yourself, and still want to have a valid
-// checksum generated at the end
-const SKIP_CHECKSUM = false;
-
 const SAVE_FILENAME = "SaveData";
 const SAVE_FILENAME_OLD = "SaveData.sav";
 
@@ -29,27 +25,14 @@ const main = () => {
 
   let saveGameData = loadSaveData(SAVE_FILENAME);
 
-  // Ensure that we can modify the save file (generate a valid checksum)
-  let validChecksum = isChecksumValid(saveGameData);
+  createBackup(SAVE_FILENAME, saveGameData);
 
-  if (!SKIP_CHECKSUM) {
-    console.log("checksum pre-check correct?", validChecksum);
-  }
+  let saveData = changeAvailableCoins(saveGameData, newCoinsAmount);
+  saveData = removeBadEggs(saveData);
 
-  if (validChecksum || SKIP_CHECKSUM) {
-    createBackup(SAVE_FILENAME, saveGameData);
-
-    let saveData = changeAvailableCoins(saveGameData, newCoinsAmount);
-    saveData = removeBadEggs(saveData);
-
-    saveData["checksum"] = calculateChecksum(saveData);
-    saveDataToFile(saveData, SAVE_FILENAME);
-    console.log(`Modified game saved as '${SAVE_FILENAME}'`);
-  } else {
-    console.log(
-      "Can't regenerate checksum, no changes made to avoid savegame corruption."
-    );
-  }
+  saveData["checksum"] = calculateChecksum(saveData);
+  saveDataToFile(saveData, SAVE_FILENAME);
+  console.log(`Modified game saved as '${SAVE_FILENAME}'`);
 };
 
 const isOldFileName = () => {
@@ -79,16 +62,7 @@ const copyData = (data) => {
 };
 
 const calculateChecksum = (jsonObject) =>
-  createHash("sha256", "DefinitelyNotSaveDataSecretKey")
-    .update(JSON.stringify(jsonObject))
-    .digest("hex");
-
-const isChecksumValid = (saveData) => {
-  const saveDataCopy = copyData(saveData);
-  saveDataCopy["checksum"] = "";
-
-  return calculateChecksum(saveDataCopy) === saveData["checksum"];
-};
+  createHash("sha256").update(JSON.stringify(jsonObject)).digest("hex");
 
 const createBackup = (fileName, saveData) => {
   const saveDataCopy = copyData(saveData);
@@ -112,7 +86,7 @@ const changeAvailableCoins = (saveData, desiredAmount) => {
   saveDataCopy["Coins"] = desiredAmount;
   saveDataCopy["LifetimeCoins"] += desiredAmount;
 
-  // Adventures
+  // Adventures - Need to have started one (just start and buy any power-up), else won't be present in the save file
   Object.keys(saveDataCopy["AdventuresSaveData"]).forEach((adventureId) => {
     saveDataCopy["AdventuresSaveData"][adventureId]["ADV_LifetimeCoins"] -=
       saveDataCopy["AdventuresSaveData"][adventureId]["ADV_Coins"];
