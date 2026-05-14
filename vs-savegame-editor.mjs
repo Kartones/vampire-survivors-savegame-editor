@@ -1,19 +1,13 @@
 import { createHash } from "crypto";
-import { existsSync, readFileSync, writeFileSync } from "fs";
+import { readFileSync, writeFileSync } from "fs";
 import { join } from "path";
 
 // This is the amount of coins that will be added to the save game, if not passed as command-line argument
 const DEFAULT_NEW_COINS_AMOUNT = 5000000;
 
 const SAVE_FILENAME = "SaveData";
-const SAVE_FILENAME_OLD = "SaveData.sav";
 
 const main = () => {
-  if (isOldFileName()) {
-    console.log("Savegame is too old.");
-    return;
-  }
-
   let newCoinsAmount = DEFAULT_NEW_COINS_AMOUNT;
   if (process.argv.length === 3) {
     try {
@@ -33,19 +27,6 @@ const main = () => {
   saveData["checksum"] = calculateChecksum(saveData);
   saveDataToFile(saveData, SAVE_FILENAME);
   console.log(`Modified game saved as '${SAVE_FILENAME}'`);
-};
-
-const isOldFileName = () => {
-  // Test first with the new filename, in case there are both files
-  if (existsSync(join(process.cwd(), SAVE_FILENAME))) {
-    return false;
-  }
-  if (existsSync(join(process.cwd(), SAVE_FILENAME_OLD))) {
-    return true;
-  }
-  throw new Error(
-    `Save file not found, attempted with filenames: ${SAVE_FILENAME}, ${SAVE_FILENAME_OLD}`
-  );
 };
 
 const loadSaveData = (fileName) => {
